@@ -2,37 +2,21 @@ import cv2
 import numpy as np
 
 import requests
-from bs4 import BeautifulSoup
-import urllib.request
+import shutil
 import os
 
-# 画像を保存するディレクトリを作成
-os.makedirs('./images', exist_ok=True)
+# 画像を取得するURLを作成
+url = 'https://www.google.co.jp/search?q=%E4%B8%80%E4%BA%BA%E6%9A%AE%E3%82%89%E3%81%97+%E9%83%A8%E5%B1%8B&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjV_7yV_KXqAhXKfXAKHV_6CzQQ_AUoAXoECBQQAw&biw=1536&bih=722'
 
-# 検索ワードを指定
-keyword = '一人暮らし 部屋'
+# 画像を取得して保存する
+if not os.path.exists('./images'):
+    os.mkdir('./images')
 
-# Google画像検索から画像を取得
-url = 'https://www.google.co.jp/search?q=' + keyword + '&source=lnms&tbm=isch'
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}
-
-# ページ情報を取得
-r = requests.get(url, headers=headers)
-soup = BeautifulSoup(r.content, 'html.parser')
-
-# 画像URLを取得
-img_urls = []
-for link in soup.find_all('img'):
-    img_urls.append(link.get('src'))
-
-# 画像を取得
-for i, img_url in enumerate(img_urls[:100]):
-    try:
-        # 画像を保存
-        urllib.request.urlretrieve(img_url, './images/' + keyword + str(i) + '.jpg')
-    except:
-        # 画像取得失敗時はスキップ
-        continue
+for i in range(100):
+    res = requests.get(url, stream=True)
+    if res.status_code == 200:
+        with open('./images/image{0:03d}.jpg'.format(i), 'wb') as f:
+            shutil.copyfileobj(res.raw, f)
 
 # 画像を読み込む
 img = cv2.imread('./images/image.jpg')
